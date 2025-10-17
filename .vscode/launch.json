@@ -1,0 +1,125 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // Taro 微信小程序开发环境
+    {
+      "name": "Taro: 微信小程序开发",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "build",
+        "--type",
+        "weapp",
+        "--watch"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    
+    // Taro H5 开发环境
+    {
+      "name": "Taro: H5 开发",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "build",
+        "--type",
+        "h5",
+        "--watch"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    
+    // Taro 支付宝小程序开发
+    {
+      "name": "Taro: 支付宝小程序开发",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "build",
+        "--type",
+        "alipay",
+        "--watch"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    
+    // Taro 生产构建
+    {
+      "name": "Taro: 生产构建(微信小程序)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "build",
+        "--type",
+        "weapp"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    
+    // Taro 创建新页面
+    {
+      "name": "Taro: 创建新页面",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "new",
+        "page"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    
+    // Taro 创建新组件
+    {
+      "name": "Taro: 创建新组件",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "new",
+        "component"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    }
+  ]
+}

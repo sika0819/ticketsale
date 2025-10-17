@@ -1,0 +1,18 @@
+{
+  "miniprogramRoot": "./dist",
+  "projectname": "myApp",
+  "description": "VR演唱会",
+  "appid": "wx49feb878630b769b",
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "compileHotReLoad": false,
+    "postcss": true,
+    "minified": true,
+    "lazyCodeLoading":"requiredComponents",
+    "uglifyFileName": true,
+    "uploadWithSourceMap": false
+  },
+  "compileType": "miniprogram"
+}

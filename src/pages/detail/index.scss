@@ -1,0 +1,181 @@
+
+.ticket-detail-page {
+  background: #101528;
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+  color: #fff;
+
+  .page-header {
+    padding: 30rpx;
+    .page-title {
+      font-size: 36rpx;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .status-desc {
+      display: block;
+      font-size: 26rpx;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 10rpx;
+    }
+  }
+
+  .ticket-info-section{
+    margin: 20rpx;
+    padding: 30rpx;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8rpx;
+
+  .ticket-card {
+    display: flex;
+    padding: 20rpx;
+
+    .ticket-details {
+      flex: 1;
+
+      .concert-name {
+        display: block;
+        font-size: 28rpx;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 8rpx;
+      }
+
+      .concert-date,
+      .concert-venue{
+        display: block;
+        font-size: 24rpx;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 4rpx;
+      }
+      
+
+      .ticket-price {
+        display: block;
+        font-size: 28rpx;
+        color: #4E37FD;
+        font-weight: bold;
+        margin-top: 8rpx;
+      }
+    }
+  }
+
+  }
+  .order-info-section,
+  .qrcode-section {
+    margin: 20rpx;
+    padding: 30rpx;
+    
+    .section-title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 20rpx;
+    }
+  }
+
+  .info-list {
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20rpx 0;
+      border-bottom: 1rpx solid rgba(255, 255, 255, 0.1);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        font-size: 26rpx;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .info-value {
+        font-size: 26rpx;
+        color: #fff;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .qrcode-container {
+    text-align: center;
+    padding: 20rpx 0;
+
+    .qrcode-canvas {
+      display: block;
+      margin: 0 auto 20rpx;
+      background: #fff;
+      border-radius: 8rpx;
+      border: 2px solid #ddd;
+    }
+    .seat-info {
+        display: block;
+    }
+    .qrcode-tip {
+      display: block;
+      font-size: 26rpx;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 10rpx;
+    }
+
+    .qrcode-info {
+      display: block;
+      font-size: 22rpx;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 5rpx;
+    }
+  }
+
+  .action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120rpx;
+    background: rgba(26, 31, 54, 0.95);
+    display: flex;
+    align-items: center;
+    padding: 0 30rpx;
+    box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+
+    .action-btn {
+      width: 100%;
+      height: 80rpx;
+      line-height: 80rpx;
+      font-size: 28rpx;
+      font-weight: bold;
+      border-radius: 40rpx;
+      border: none;
+      text-align: center;
+
+      &.btn-pay {
+        background: #52c41a;
+        color: #fff;
+      }
+
+      &.btn-refund {
+        background: #faad14;
+        color: #fff;
+      }
+
+      &.btn-reorder {
+        background: #4E37FD;
+        color: #fff;
+      }
+
+      &.btn-detail {
+        background: #8c8c8c;
+        color: #fff;
+      }
+
+      &.btn-default {
+        background: #4E37FD;
+        color: #fff;
+      }
+    }
+  }
+}

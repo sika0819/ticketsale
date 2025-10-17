@@ -1,0 +1,123 @@
+page {
+  background: #101528 !important;
+  padding-bottom: env(safe-area-inset-bottom); // 适配安全区域
+}
+
+.index {
+  min-height: 100vh;
+  padding-bottom: 100px; // 为原生 tabBar 留出空间
+  background: #101528 !important;
+  min-height: 100vh;
+
+  .banner {
+    height: 400px;
+    
+    image {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .concert-list {
+    padding: 30px;
+
+    .section-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      color: #fff;
+    }
+
+    .concert-item {
+      display: flex;
+      margin-bottom: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+      .concert-image {
+        width: 200px;
+        height: 150px;
+        // 海报垂直居中
+        align-self: center; // 垂直居中
+        object-fit: cover; // 保持图片比例
+      }
+
+      .concert-info {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        position: relative; // 为价格定位提供参考
+
+        .concert-name {
+          font-size: 32px;
+          font-weight: bold;
+          color: #fff;
+          margin-bottom: 10px;
+          line-height: 1.4;
+        }
+
+        .concert-date,
+        .concert-venue {
+          font-size: 26px;
+          color: rgba(255, 255, 255, 0.8);
+          margin-bottom: 8px;
+          line-height: 1.4;
+        }
+
+        .concert-price {
+          font-size: 28px;
+          color: #4E37FD;
+          font-weight: bold;
+          // 价格对齐到右下角
+          position: absolute;
+          right: 20px;
+          bottom: 20px;
+          text-align: right;
+        }
+      }
+    }
+  }
+
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: #1a1f36;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0;
+      flex: 1;
+
+      &.active {
+        .tab-text {
+          color: #4E37FD;
+        }
+      }
+
+      .tab-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 8px;
+      }
+
+      .tab-text {
+        font-size: 24px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+}
