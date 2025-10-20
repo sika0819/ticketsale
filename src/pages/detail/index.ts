@@ -3,26 +3,27 @@ import { ref, onMounted, Ref } from 'vue'
 import Taro from '@tarojs/taro'
 import drawQrcode from 'weapp-qrcode'
 
+import config from '../../../config/index'
 // 定义票务数据类型
 interface Ticket {
-  id: number
-  concertId: number
-  city: string
-  concertName: string
-  concertImage: string
-  date: string
-  time: string
-  venue: string
-  seatArea: string
-  seatNumber: string
-  price: number
-  status: 'pending' | 'confirmed' | 'refunded' | 'expired'
-  purchaseTime: string
-  orderNumber: string
-  ticketNumber: string
-  refundDeadline?: string
-  expireTime?: string
-  refundTime?: string
+  id: number;
+  concertId: number;
+  city: string;
+  concertName: string;
+  concertImage: string;
+  date: string;
+  time: string;
+  venue: string;
+  seatArea: string;
+  seatNumber: string;
+  price: number;
+  status: 'pending' | 'confirmed' | 'refunded' | 'expired';
+  purchaseTime: string;
+  orderNumber: string;
+  ticketNumber: string;
+  refundDeadline?: string;
+  expireTime?: string;
+  refundTime?: string;
 }
 
 // 二维码数据类型
@@ -39,22 +40,22 @@ interface QRCodeData {
   price: number
 }
 
-// 后台URL地址 - 请根据实际情况修改
-const backendUrl = 'https://your-backend-domain.com/api/verify'
+// 如果 config 是一个函数，需要调用它以获取配置对象
+const backendUrl = (typeof config === 'function' ? config({}) : config).apiBaseUrl + '/verify'
 
-export function useTicketDetail() {
+export default function useTicketDetail() {
   const ticket: Ref<Ticket> = ref({} as Ticket)
   const qrcodeSize = ref(200)
 
   // 获取状态样式类
   const getStatusClass = (status: Ticket['status']): string => {
-    const statusMap: Record<Ticket['status'], string> = {
+    const classMap: Record<Ticket['status'], string> = {
       pending: 'status-pending',
       confirmed: 'status-confirmed',
       refunded: 'status-refunded',
       expired: 'status-expired'
     }
-    return statusMap[status] || 'status-pending'
+    return classMap[status] || 'status-default'
   }
 
   // 获取状态文本
@@ -107,7 +108,7 @@ export function useTicketDetail() {
       title: '确认支付',
       content: `确定要支付「${ticket.concertName}」的门票吗？金额：¥${ticket.price}`,
       confirmColor: '#4E37FD',
-      success: (res: TaroGeneral.CallbackResult) => {
+      success: (res: Taro.showModal.SuccessCallbackResult) => {
         if (res.confirm) {
           // 模拟支付成功
           ticket.status = 'confirmed'
@@ -130,7 +131,7 @@ export function useTicketDetail() {
       title: '确认退票',
       content: `确定要退掉「${ticket.concertName}」的门票吗？退票将收取10%手续费。`,
       confirmColor: '#4E37FD',
-      success: (res: TaroGeneral.CallbackResult) => {
+      success: (res: Taro.showModal.SuccessCallbackResult) => {
         if (res.confirm) {
           ticket.status = 'refunded'
           Taro.showToast({

@@ -1,4 +1,5 @@
-import path from 'path'
+// @ts-ignore
+
 
 const config = {
   projectName: 'myApp',
@@ -9,13 +10,14 @@ const config = {
     '750': 1,
     '828': 1.81
   },
+  apiBaseUrl: 'https://www.3fenban.com/api', // 统一 API 地址
   sourceRoot: 'src',
   outputRoot: 'dist',
   framework: 'vue3',
   compiler: 'webpack5',
   plugins: [],
   alias: {
-    '@': path.resolve(__dirname, '..', 'src')
+    '@': 'src'
   },
   copy: {
     patterns: [],

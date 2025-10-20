@@ -33,7 +33,7 @@
       <view class="navigation">
         <view class="navigation-content">
         <image class="arrow-icon" :src="arrowIcon" mode="aspectFit" />
-        <text class="distance">{{ concert.distance }}</text>
+  <!-- <text class="distance">{{ concert.distance }}</text> -->
         </view>
       </view>
     </view>
@@ -75,12 +75,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent, watch } from 'vue'
 import Taro from '@tarojs/taro'
+import config from '../../../config/index'
 
 // 异步加载介绍组件
 const ConcertIntro = defineAsyncComponent({
-  loader: () => import('@/components/ConcertIntro.vue'),
+  loader: () => import('../../components/ConcertIntro.vue'),
   delay: 200,
   timeout: 10000,
   suspensible: false
@@ -90,7 +91,7 @@ export default {
   components: { ConcertIntro },
   setup() {
     const concert = ref({})
- const arrowIcon = ref('../../assets/images/arrow.png') // 箭头图标路径
+    const arrowIcon = ref('../../assets/images/arrow.png') // 箭头图标路径
 
     // 计算剩余票数百分比
     const ticketPercentage = computed(() => {
@@ -99,35 +100,38 @@ export default {
       return (remaining / total) * 100
     })
 
+    // 后台获取演唱会详情
+    const loadConcertData = async () => {
+      try {
+        // 假设通过id参数获取详情
+        const id = Taro.getCurrentInstance().router?.params?.id
+        console.log('请求演唱会详情接口:', `${config.apiBaseUrl}/concert/index`, { id })
+        const res = await Taro.request({
+          url: `${config.apiBaseUrl}/concert/index`, // 实际接口路径
+          method: 'GET',
+          data: { id }
+        })
+        console.log('演唱会详情接口返回:', res)
+        concert.value = res.data || {}
+      } catch (err) {
+        Taro.showToast({ title: '演唱会数据加载失败', icon: 'none' })
+      }
+    }
+
     onMounted(() => {
       loadConcertData()
     })
-
-    const loadConcertData = () => {
-      // 模拟演唱会数据
-      concert.value = {
-        id: 1,
-        poster: '../../assets/images/concert1.png',
-        location: '北京',
-        name: '2025VR演唱会',
-        price: 380,
-        date: '2025-10-31',
-        time: '19:30',
-        venue: '合生汇',
-        address: '北京市朝阳区西大望路21号合生汇购物中心5层',
-        distance: '1.2km',
-        tags: ['提供VR设备', '电子发票', '支持退票'],
-        introduction: '2025最新VR巡回演唱会，带来最新专辑以及经典歌曲表演。跨年夜，让我们一起跟随音乐唱响未来！本次演唱会采用最先进的VR技术，为观众带来沉浸式视听体验。演出包含多首经典曲目和新专辑首发歌曲，时长约120分钟。',
-        remainingTickets: 40,
-        totalTickets: 100
-      }
-    }
 
     const goToTicketSelection = () => {
       Taro.navigateTo({
         url: `/pages/ticket/index`
       })
     }
+
+    // 监听 concert 变化并打印具体参数
+    watch(concert, (val) => {
+      console.log('concert 详情参数:', val)
+    }, { immediate: true, deep: true })
 
     return {
       concert,

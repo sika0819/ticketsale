@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { useTicketDetail } from './index.ts'
+import useTicketDetail from './index.ts'
 import './index.scss'
 
 export default {

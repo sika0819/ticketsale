@@ -27,30 +27,38 @@
 
 <script>
 import { ref } from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { useLoad } from '@tarojs/taro'
 import './index.scss'
-
 export default {
   setup () {
-    const banners = ref([
-      { 
-        id: 1, 
-        imageUrl: '../../assets/images/banner1.png', 
-        link: '/pages/concert/index?id=1' 
+    const banners = ref([])
+    const concerts = ref([])
+
+    // 获取轮播图和演唱会列表数据
+    const fetchData = async () => {
+      try {
+        // 轮播图接口
+        console.log('请求轮播图接口:', 'https://www.3fenban.com/api/banners')
+        const bannerRes = await Taro.request({
+          url: 'https://www.3fenban.com/api/banners', // 替换为实际接口
+          method: 'GET'
+        })
+        console.log('轮播图接口返回:', bannerRes)
+        banners.value = bannerRes.data || []
+
+        // 演唱会列表接口
+        console.log('请求演唱会列表接口:', 'https://www.3fenban.com/api/concerts')
+        const concertRes = await Taro.request({
+          url: 'https://www.3fenban.com/api/concerts', // 替换为实际接口
+          method: 'GET'
+        })
+        console.log('演唱会列表接口返回:', concertRes)
+        concerts.value = concertRes.data || []
+      } catch (err) {
+        console.error('数据加载失败:', err)
+        Taro.showToast({ title: '数据加载失败', icon: 'none' })
       }
-    ])
-    
-    const concerts = ref([
-      {
-        id: 1,
-        city: '北京',
-        name: '2025VR演唱会',
-        date: '2025-10-31',
-        venue: '北京鸟巢体育场',
-        price: 380,
-        imageUrl: '../../assets/images/concert1.png'
-      }
-    ])
+    }
 
     const onBannerTap = (banner) => {
       Taro.navigateTo({ url: banner.link })
@@ -59,6 +67,12 @@ export default {
     const navigateToConcert = (id) => {
       Taro.navigateTo({ url: `/pages/concert/index?id=${id}` })
     }
+
+    // 页面加载时获取数据
+   
+    useLoad(() => {
+      fetchData()
+    })
 
     return {
       banners,

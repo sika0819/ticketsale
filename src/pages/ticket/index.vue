@@ -85,6 +85,22 @@
       </view>
     </view>
 
+    <!-- 身份证号 -->
+    <view class="section">
+      <view class="section-header">
+        <text class="section-title">身份证号</text>
+      </view>
+      <view class="idcard-input">
+        <input 
+          class="idcard-field" 
+          type="text" 
+          placeholder="请输入身份证号码" 
+          v-model="idCard"
+          maxlength="18"
+        />
+      </view>
+    </view>
+
     <!-- 购票须知 -->
     <view class="notice-section">
       <view class="section-header">
@@ -118,6 +134,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+import config from '../../../config/index'
 
 export default {
   setup() {
@@ -126,7 +143,7 @@ export default {
     const selectedSession = ref(null)
     const quantity = ref(1)
     const phoneNumber = ref('')
-    
+    const idCard = ref('') // 新增身份证号输入
     const notices = ref([
       '每人每次限购4张门票',
       '演出前3天不支持退换票',
@@ -145,46 +162,34 @@ export default {
              /^1[3-9]\d{9}$/.test(phoneNumber.value)
     })
 
+    // 后台获取演唱会和场次数据
+    const loadConcertData = async () => {
+      try {
+        const concertId = Taro.getCurrentInstance().router?.params?.concertId
+        console.log('请求演唱会详情接口:', `${config.apiBaseUrl}/concert/detail`, { concertId })
+        const concertRes = await Taro.request({
+          url: `${config.apiBaseUrl}/concert/detail`,
+          method: 'GET',
+          data: { id: concertId }
+        })
+        console.log('演唱会详情接口返回:', concertRes)
+        concert.value = concertRes.data || {}
+        console.log('请求场次接口:', `${config.apiBaseUrl}/concert/sessions`, { concertId })
+        const sessionsRes = await Taro.request({
+          url: `${config.apiBaseUrl}/concert/sessions`,
+          method: 'GET',
+          data: { concertId }
+        })
+        console.log('场次接口返回:', sessionsRes)
+        sessions.value = sessionsRes.data || []
+      } catch (err) {
+        Taro.showToast({ title: '演唱会数据加载失败', icon: 'none' })
+      }
+    }
+
     onMounted(() => {
-      // 模拟数据加载
       loadConcertData()
     })
-
-    const loadConcertData = () => {
-      // 模拟演唱会数据 - 固定价格
-      concert.value = {
-        id: 1,
-        name: '2025VR演唱会',
-        artist: '周杰伦',
-        price: 380, // 固定价格
-        imageUrl: '../../assets/images/concert1.png'
-      }
-
-      // 模拟场次数据
-      sessions.value = [
-        {
-          id: 1,
-          date: '2025-10-31',
-          time: '17:30',
-          venue: '北京鸟巢体育场',
-          status: 'available'
-        },
-        {
-          id: 2,
-          date: '2025-11-01',
-          time: '19:30',
-          venue: '北京鸟巢体育场',
-          status: 'available'
-        },
-        {
-          id: 3,
-          date: '2025-11-02',
-          time: '20:00',
-          venue: '北京鸟巢体育场',
-          status: 'sold-out'
-        }
-      ]
-    }
 
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -221,11 +226,9 @@ export default {
 
     const handlePurchase = () => {
       if (!canPurchase.value) return
-
       const session = sessions.value.find(s => s.id === selectedSession.value)
-
       Taro.navigateTo({
-        url: `/pages/order/create?concertId=${concert.value.id}&sessionId=${selectedSession.value}&quantity=${quantity.value}&phone=${phoneNumber.value}&totalPrice=${calculateTotalPrice()}`
+        url: `/pages/order/create?concertId=${concert.value.id}&sessionId=${selectedSession.value}&quantity=${quantity.value}&phone=${phoneNumber.value}&idCard=${idCard.value}&totalPrice=${calculateTotalPrice()}`
       })
     }
 
@@ -235,6 +238,7 @@ export default {
       selectedSession,
       quantity,
       phoneNumber,
+      idCard,
       notices,
       canPurchase,
       formatDate,
@@ -448,6 +452,28 @@ export default {
     }
 
     .phone-input {
+      flex: 1;
+      padding: 0 20rpx;
+      font-size: 28rpx;
+      height: 40rpx;
+      color: #fff;
+      
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+      }
+    }
+  }
+
+  .idcard-input {
+    display: flex;
+    align-items: center;
+    border: 2rpx solid rgba(255, 255, 255, 0.2);
+    border-radius: 8rpx;
+    padding: 20rpx;
+    background: rgba(255, 255, 255, 0.05);
+    margin-top: 20rpx;
+
+    .idcard-field {
       flex: 1;
       padding: 0 20rpx;
       font-size: 28rpx;

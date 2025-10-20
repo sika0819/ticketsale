@@ -30,20 +30,20 @@
     <scroll-view class="tickets-list" scroll-y>
       <!-- 空状态 -->
       <view class="empty-state" v-if="filteredTickets.length === 0">
-        <image src="@/assets/images/empty-tickets.png" class="empty-image" />
+  <image src="../../assets/images/empty-tickets.png" class="empty-image" />
         <text class="empty-text">{{ getEmptyText() }}</text>
         <text class="empty-subtext">{{ getEmptySubtext() }}</text>
         <button class="buy-btn" @tap="goToHome" v-if="activeTab === 'all'">去购票</button>
       </view>
 
       <!-- 票列表 -->
-      <view class="ticket-item" v-for="ticket in filteredTickets" :key="ticket.id" @tap="viewTicketDetail(ticket)">
+  <view class="ticket-item" v-for="ticket in filteredTickets" :key="ticket.id" @tap="viewTicketDetail(ticket)">
         <!-- 票状态标签 -->
         <view class="ticket-status" :class="getStatusClass(ticket.status)">
           {{ getStatusText(ticket.status) }}
         </view>
 
-        <!-- 票信息 -->
+  <!-- 票信息 -->
         <view class="ticket-content">
           <image :src="ticket.concertImage" class="concert-image" mode="aspectFill" />
           <view class="ticket-info">
@@ -54,6 +54,11 @@
             <text class="ticket-price">¥{{ ticket.price }}</text>
           </view>
         </view>
+
+        <!-- 支付按钮（仅在待支付状态下显示） -->
+        <button class="pay-btn" v-if="ticket.status === 'pending'" @tap.stop="payOrder(ticket)">
+          立即支付
+        </button>
       </view>
     </scroll-view>
   </view>
@@ -62,6 +67,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import Taro from '@tarojs/taro'
+import config from '../../../config/index'
 
 export default {
   setup() {
@@ -76,27 +82,8 @@ export default {
       { key: 'expired', label: '已过期' }
     ])
 
-    // 模拟票数据
-    const tickets = ref([
-      {
-        id: 1,
-        concertId: 1,
-        concertName: '周杰伦2025巡回演唱会',
-        concertImage: '../../assets/images/concert1.png',
-        date: '2025-12-31',
-        time: '19:30',
-        venue: '北京鸟巢体育场',
-        seatArea: 'A区',
-        seatNumber: '12排08座',
-        price: 580,
-        status: 'confirmed', // pending: 待支付, confirmed: 待核销, refunded: 已退款, expired: 已过期
-        purchaseTime: '2025-10-10 14:30:25',
-        orderNumber: 'T202510101430001',
-        ticketNumber: 'TJ202510101430001',
-        refundDeadline: '2025-12-25 23:59:59',
-        expireTime: '2025-12-31 23:59:59'
-      }
-    ])
+    // 票数据从后台获取
+    const tickets = ref([])
 
     // 根据当前Tab筛选票
     const filteredTickets = computed(() => {
@@ -179,9 +166,63 @@ export default {
     }
 
     // 加载票数据
-    const loadTickets = () => {
-      // 模拟API调用
-      // tickets.value = await api.getTickets()
+    const loadTickets = async () => {
+      try {
+        console.log('请求票夹接口:', `${config.apiBaseUrl}/tickets`)
+        const res = await Taro.request({
+          url: `${config.apiBaseUrl}/tickets`, // 实际接口路径
+          method: 'GET'
+        })
+        console.log('票夹接口返回:', res)
+        tickets.value = res.data || []
+      } catch (err) {
+        Taro.showToast({ title: '票夹加载失败', icon: 'none' })
+      }
+    }
+
+    // 微信支付统一下单
+    const payOrder = async (ticket) => {
+      try {
+        // 1. 请求后端微信支付统一下单接口
+        const res = await Taro.request({
+          url: `${config.apiBaseUrl}/wechatpay/unifiedorder`,
+          method: 'POST',
+          data: {
+            description: ticket.concertName || '演唱会门票',
+            out_trade_no: ticket.orderNumber || `ORDER_${ticket.id}`,
+            amount: ticket.price,
+            openid: ticket.openid || '', // 需确保有openid
+            trade_type: 'JSAPI'
+          }
+        })
+        const payData = res.data
+        // 2. 调用微信支付
+        await Taro.requestPayment({
+          timeStamp: payData.timeStamp,
+          nonceStr: payData.nonceStr,
+          package: payData.package,
+          signType: 'MD5',
+          paySign: payData.paySign
+        })
+        Taro.showToast({ title: '支付成功', icon: 'success' })
+        checkPayStatus(ticket.id)
+      } catch (err) {
+        Taro.showToast({ title: '支付失败', icon: 'none' })
+      }
+    }
+    // 查询支付状态
+    const checkPayStatus = async (orderId) => {
+      try {
+        console.log('请求支付状态接口:', `${config.apiBaseUrl}/order/status`, { orderId })
+        const res = await Taro.request({
+          url: `${config.apiBaseUrl}/order/status`,
+          method: 'GET',
+          data: { orderId }
+        })
+        console.log('支付状态接口返回:', res)
+        // 可根据返回结果刷新票据状态
+        loadTickets()
+      } catch {}
     }
 
     onMounted(() => {
@@ -200,7 +241,9 @@ export default {
       viewTicketDetail,
       goToHome,
       getEmptyText,
-      getEmptySubtext
+      getEmptySubtext,
+  payOrder,
+  checkPayStatus,
     }
   }
 }
@@ -360,6 +403,24 @@ export default {
             font-weight: bold;
             margin-top: 8px;
           }
+        }
+      }
+
+      .pay-btn {
+        background: #4E37FD;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 24px;
+        font-weight: bold;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        transition: background 0.3s ease;
+
+        &:hover {
+          background: #5b4efc;
         }
       }
     }
