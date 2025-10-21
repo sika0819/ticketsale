@@ -1,7 +1,9 @@
 // pages/detail/index.ts
 import { ref, onMounted, Ref } from 'vue'
 import Taro from '@tarojs/taro'
-import drawQrcode from 'weapp-qrcode'
+// 兼容 CommonJS/ESM 导入 weapp-qrcode
+import * as drawQrcodeModule from 'weapp-qrcode'
+const drawQrcode = (drawQrcodeModule && (drawQrcodeModule.default || drawQrcodeModule)) as any
 
 import config from '../../../config/index'
 // 定义票务数据类型

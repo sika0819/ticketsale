@@ -82,6 +82,7 @@
 <script>
 import useTicketDetail from './index.ts'
 import './index.scss'
+import getConfig from '../../../config/index'
 
 export default {
   setup() {

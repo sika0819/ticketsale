@@ -10,7 +10,7 @@ const config = {
     '750': 1,
     '828': 1.81
   },
-  apiBaseUrl: 'https://www.3fenban.com/api', // 统一 API 地址
+  apiBaseUrl: 'https://test.3fenban.com/api', // 统一 API 地址
   sourceRoot: 'src',
   outputRoot: 'dist',
   framework: 'vue3',
@@ -60,9 +60,9 @@ const config = {
   }
 }
 
-export default function (merge) {
+export default function () {
   if (process.env.NODE_ENV === 'development') {
-    return merge({}, config, { env: { NODE_ENV: 'development' } })
+    return Object.assign({}, config, { env: { NODE_ENV: 'development' } })
   }
-  return merge({}, config, { env: { NODE_ENV: 'production' } })
+  return Object.assign({}, config, { env: { NODE_ENV: 'production' } })
 }

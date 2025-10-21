@@ -77,7 +77,7 @@
 <script>
 import { ref, computed, onMounted, defineAsyncComponent, watch } from 'vue'
 import Taro from '@tarojs/taro'
-import config from '../../../config/index'
+import getConfig from '../../../config/index'
 
 // 异步加载介绍组件
 const ConcertIntro = defineAsyncComponent({
@@ -105,6 +105,7 @@ export default {
       try {
         // 假设通过id参数获取详情
         const id = Taro.getCurrentInstance().router?.params?.id
+        const config = getConfig()
         console.log('请求演唱会详情接口:', `${config.apiBaseUrl}/concert/index`, { id })
         const res = await Taro.request({
           url: `${config.apiBaseUrl}/concert/index`, // 实际接口路径

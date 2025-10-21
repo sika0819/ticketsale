@@ -38,18 +38,18 @@ export default {
     const fetchData = async () => {
       try {
         // 轮播图接口
-        console.log('请求轮播图接口:', 'https://www.3fenban.com/api/banners')
+        console.log('请求轮播图接口:', 'https://test.3fenban.com/api/banners')
         const bannerRes = await Taro.request({
-          url: 'https://www.3fenban.com/api/banners', // 替换为实际接口
+          url: 'https://test.3fenban.com/api/banners', // 替换为实际接口
           method: 'GET'
         })
         console.log('轮播图接口返回:', bannerRes)
         banners.value = bannerRes.data || []
 
         // 演唱会列表接口
-        console.log('请求演唱会列表接口:', 'https://www.3fenban.com/api/concerts')
+        console.log('请求演唱会列表接口:', 'https://test.3fenban.com/api/concerts')
         const concertRes = await Taro.request({
-          url: 'https://www.3fenban.com/api/concerts', // 替换为实际接口
+          url: 'https://test.3fenban.com/api/concerts', // 替换为实际接口
           method: 'GET'
         })
         console.log('演唱会列表接口返回:', concertRes)
