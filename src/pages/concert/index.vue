@@ -92,7 +92,7 @@ export default {
   setup() {
     const concert = ref({})
     const arrowIcon = ref('../../assets/images/arrow.png') // 箭头图标路径
-
+    const config = getConfig()
     // 计算剩余票数百分比
     const ticketPercentage = computed(() => {
       const remaining = concert.value.remainingTickets || 0
