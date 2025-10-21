@@ -8,36 +8,7 @@
       <button class="login-btn" open-type="getUserInfo" @tap="handleWxLogin" v-if="!userInfo.username">微信登录</button>
     </view>
 
-    <!-- 实名认证 -->
-    <view class="auth-section">
-      <button class="auth-btn" @tap="showAuthModal">实名认证</button>
-      <view v-if="authInfo.name">
-        <text>已认证：{{ authInfo.name }} {{ authInfo.idCard }}</text>
-      </view>
-    </view>
-
-    <!-- 功能菜单 -->
-    <view class="menu-list">
-      <view class="menu-item" @tap="navigateTo('/pages/settings/index')">
-        <text class="menu-text">设置</text>
-        <text class="menu-arrow">></text>
-      </view>
-      <view class="menu-item" @tap="navigateTo('/pages/about/index')">
-        <text class="menu-text">关于我们</text>
-        <text class="menu-arrow">></text>
-      </view>
-    </view>
-
-    <!-- 实名认证弹窗 -->
-    <view v-if="showModal" class="modal-mask">
-      <view class="modal-content">
-        <text class="modal-title">实名认证</text>
-        <input class="modal-input" v-model="authName" placeholder="请输入姓名" />
-        <input class="modal-input" v-model="authIdCard" placeholder="请输入身份证号" />
-        <button class="modal-btn" @tap="submitAuth">提交认证</button>
-        <button class="modal-btn cancel" @tap="closeAuthModal">取消</button>
-      </view>
-    </view>
+   
   </view>
 </template>
 
@@ -68,54 +39,37 @@ export default defineComponent({
         console.log('用户信息接口返回:', res)
         userInfo.value = res.data || { username: '', avatar: '', phone: '' }
       } catch (err) {
-        Taro.showToast({ title: '用户信息加载失败', icon: 'none' })
+
       }
     }
     // 微信登录并获取openid、头像、昵称，连接后台创建/更新用户
     const handleWxLogin = async () => {
       try {
-        // 1. 微信登录获取 code
+        // 一键获取微信用户信息
+        const userProfileRes = await Taro.getUserProfile({ desc: '用于完善会员资料' })
+        const { nickName, avatarUrl } = userProfileRes.userInfo
+        // 获取 code
         const loginRes = await Taro.login()
         const code = loginRes.code
         if (!code) throw new Error('获取code失败')
-
-        // 2. 获取微信用户信息
-        const userRes = await Taro.getUserInfo()
-        const { nickName, avatarUrl } = userRes.userInfo
-
-        // 3. 请求后端换取 openid（假设有 /user/wxlogin 接口，返回 { openid }）
-        const openidRes = await Taro.request({
-          url: `${config.apiBaseUrl}/user/wxlogin`,
-          method: 'POST',
-          data: { code }
-        })
-        const openid = openidRes.data?.openid
-        if (!openid) throw new Error('获取openid失败')
-
-        // 4. 可选：获取手机号（如需）
+        // 可选：获取手机号（如需）
         let phone = ''
-        try {
-          const phoneRes = await Taro.getPhoneNumber()
-          phone = phoneRes?.phoneNumber || ''
-        } catch {}
-
-        // 5. 组装用户信息并同步到后端
+        // 组装用户信息并同步到后端
         const userPayload = {
-          openid,
+          code,
           username: nickName,
           avatar: avatarUrl,
           phone
         }
         userInfo.value = userPayload
-        console.log('请求用户更新接口:', `${config.apiBaseUrl}/user/update`, userPayload)
         await Taro.request({
           url: `${config.apiBaseUrl}/user/update`,
           method: 'POST',
           data: userPayload
         })
-        console.log('用户更新接口已请求')
+        Taro.showToast({ title: '登录成功', icon: 'success' })
       } catch (err) {
-        Taro.showToast({ title: '微信登录失败', icon: 'none' })
+        Taro.showToast(err.message || '微信登录失败', 'none')
       }
     }
     // 实名认证弹窗
@@ -132,18 +86,27 @@ export default defineComponent({
         Taro.showToast({ title: '请填写完整信息', icon: 'none' })
         return
       }
-      // 可选：校验身份证号格式
-      authInfo.value = { name: authName.value, idCard: authIdCard.value }
-      showModal.value = false
-      // 可选：同步到后端
-      console.log('请求实名认证接口:', `${config.apiBaseUrl}/user/auth`, authInfo.value)
-      await Taro.request({
-        url: `${config.apiBaseUrl}/user/auth`,
-        method: 'POST',
-        data: authInfo.value
-      })
-      console.log('实名认证接口已请求')
-      Taro.showToast({ title: '认证成功', icon: 'success' })
+      try {
+        // 获取微信 code
+        const loginRes = await Taro.login()
+        const code = loginRes.code
+        if (!code) throw new Error('获取code失败')
+        // 提交实名信息和 code 到后端
+        authInfo.value = { name: authName.value, idCard: authIdCard.value }
+        showModal.value = false
+        await Taro.request({
+          url: `${config.apiBaseUrl}/user/auth`,
+          method: 'POST',
+          data: {
+            code,
+            name: authName.value,
+            idCard: authIdCard.value
+          }
+        })
+        Taro.showToast({ title: '认证信息已提交', icon: 'success' })
+      } catch (err) {
+        Taro.showToast({ title: '实名认证异常', icon: 'none' })
+      }
     }
     onMounted(() => {
       loadUserInfo()

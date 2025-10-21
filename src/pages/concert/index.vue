@@ -123,10 +123,44 @@ export default {
       loadConcertData()
     })
 
-    const goToTicketSelection = () => {
-      Taro.navigateTo({
-        url: `/pages/ticket/index`
-      })
+    // 立即购买前先检查微信是否登录
+    const goToTicketSelection = async () => {
+      try {
+        // 检查本地是否有openid（可根据实际存储方式调整）
+        const openid = Taro.getStorageSync('openid')
+        if (!openid) {
+          Taro.showModal({
+            title: '请先登录',
+            content: '请前往“我的”页面完成微信登录',
+            showCancel: false,
+            success: () => {
+              Taro.switchTab({ url: '/pages/mine/index' })
+            }
+          })
+          return
+        }
+        // 已登录，直接调用微信支付统一下单和支付
+        const payRes = await Taro.request({
+          url: `${config.apiBaseUrl}/wechatpay/unifiedorder`,
+          method: 'POST',
+          data: {
+            description: concert.value.name,
+            amount: concert.value.price,
+            openid,
+            trade_type: 'JSAPI'
+          }
+        })
+        const payData = payRes.data
+        await Taro.requestPayment({
+          timeStamp: payData.timeStamp,
+          nonceStr: payData.nonceStr,
+          package: payData.package,
+          signType: 'MD5',
+          paySign: payData.paySign
+        })
+      } catch (err) {
+        Taro.showToast({ title: '支付失败', icon: 'none' })
+      }
     }
 
     // 监听 concert 变化并打印具体参数

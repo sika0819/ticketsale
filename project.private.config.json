@@ -2,11 +2,11 @@
   "libVersion": "3.10.3",
   "projectname": "myApp",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "coverView": false,
     "lazyloadPlaceholderEnable": false,
     "skylineRenderEnable": false,
-    "preloadBackgroundData": false,
+    "preloadBackgroundData": true,
     "autoAudits": false,
     "useApiHook": true,
     "useApiHostProcess": true,
