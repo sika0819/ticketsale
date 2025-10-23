@@ -165,17 +165,25 @@ export default {
     // 后台获取演唱会和场次数据
     const loadConcertData = async () => {
       try {
+        // 首先检查网络状态
+        const { checkNetworkStatus, safeRequest } = await import('../../utils/networkErrorHandler')
+        
+        const isNetworkAvailable = await checkNetworkStatus()
+        if (!isNetworkAvailable) return
+        
         const concertId = Taro.getCurrentInstance().router?.params?.concertId
         console.log('请求演唱会详情接口:', `${config.apiBaseUrl}/concert/detail`, { concertId })
-        const concertRes = await Taro.request({
+        
+        const concertRes = await safeRequest({
           url: `${config.apiBaseUrl}/concert/detail`,
           method: 'GET',
           data: { id: concertId }
         })
         console.log('演唱会详情接口返回:', concertRes)
         concert.value = concertRes.data || {}
+        
         console.log('请求场次接口:', `${config.apiBaseUrl}/concert/sessions`, { concertId })
-        const sessionsRes = await Taro.request({
+        const sessionsRes = await safeRequest({
           url: `${config.apiBaseUrl}/concert/sessions`,
           method: 'GET',
           data: { concertId }
@@ -183,7 +191,8 @@ export default {
         console.log('场次接口返回:', sessionsRes)
         sessions.value = sessionsRes.data || []
       } catch (err) {
-        Taro.showToast({ title: '演唱会数据加载失败', icon: 'none' })
+        console.error('演唱会数据加载失败:', err)
+        // 错误已在 safeRequest 中处理，这里不需要重复显示
       }
     }
 

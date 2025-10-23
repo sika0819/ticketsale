@@ -95,48 +95,12 @@ Taro.request({
 ```
 
 ### 5. 用户信息与实名认证
+获取用户信息：
   - GET `/user/info`
+更新用户信息（微信登录）：
   - POST `/user/update`，参数：`{ username, avatar, phone }`
+实名认证：
   - POST `/user/auth`，参数：`{ name, idCard }`
-
-### 微信实名登录与认证
- 前端流程：
-  1. 用户在“我的”页面点击微信登录，调用 Taro.login 获取 code。
-  2. 获取微信用户信息（头像、昵称、手机号），调用 `/api/user/update` 更新用户信息。
-  3. 用户提交姓名和身份证号，前端调用 `/api/user/auth` 进行实名认证。
-  4. 后台可集成第三方实名认证服务（如聚合数据/阿里云/腾讯云），校验姓名和身份证号。
-
- 后台接口：
-  - POST `/api/user/update` 参数：`{ openid, username, avatar, phone }`，用于微信登录后同步用户信息。
-  - POST `/api/user/auth` 参数：`{ name, idCard }`，用于提交实名信息，后台校验后保存。
-
- 前端调用示例：
-```js
-// 微信登录并同步用户信息
-const loginRes = await Taro.login()
-const userProfileRes = await Taro.getUserProfile({ desc: '用于完善会员资料' })
-await Taro.request({
-  url: `${apiBaseUrl}/user/update`,
-  method: 'POST',
-  data: {
-    code: loginRes.code,
-    avatarUrl: userProfileRes.userInfo.avatarUrl,
-    nickName: userProfileRes.userInfo.nickName,
-    // 手机号可通过 wx.getPhoneNumber 获取
-  }
-})
-// 实名认证
-await Taro.request({
-  url: `${apiBaseUrl}/user/auth`,
-  method: 'POST',
-  data: {
-    name: authName,
-    idCard: authIdCard
-  }
-})
-```
-
----
 - H5 网页开发：
 
 ```bash

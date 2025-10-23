@@ -32,8 +32,8 @@
       </view>
       <view class="navigation">
         <view class="navigation-content">
-        <image class="arrow-icon" :src="arrowIcon" mode="aspectFit" />
-  <!-- <text class="distance">{{ concert.distance }}</text> -->
+          <text class="arrow-icon">{{ arrowIcon }}</text>
+          <!-- <text class="distance">{{ concert.distance }}</text> -->
         </view>
       </view>
     </view>
@@ -91,7 +91,8 @@ export default {
   components: { ConcertIntro },
   setup() {
     const concert = ref({})
-    const arrowIcon = ref('../../assets/images/arrow.png') // 箭头图标路径
+    // 使用emoji代替图片资源
+    const arrowIcon = '➤' // 箭头图标
     const config = getConfig()
     // 计算剩余票数百分比
     const ticketPercentage = computed(() => {
@@ -103,11 +104,18 @@ export default {
     // 后台获取演唱会详情
     const loadConcertData = async () => {
       try {
+        // 首先检查网络状态
+        const { checkNetworkStatus, safeRequest } = await import('../../utils/networkErrorHandler')
+        
+        const isNetworkAvailable = await checkNetworkStatus()
+        if (!isNetworkAvailable) return
+
         // 假设通过id参数获取详情
         const id = Taro.getCurrentInstance().router?.params?.id
         const config = getConfig()
         console.log('请求演唱会详情接口:', `${config.apiBaseUrl}/concert/index`, { id })
-        const res = await Taro.request({
+        
+        const res = await safeRequest({
           url: `${config.apiBaseUrl}/concert/index`, // 实际接口路径
           method: 'GET',
           data: { id }
@@ -115,7 +123,8 @@ export default {
         console.log('演唱会详情接口返回:', res)
         concert.value = res.data || {}
       } catch (err) {
-        Taro.showToast({ title: '演唱会数据加载失败', icon: 'none' })
+        console.error('演唱会数据加载失败:', err)
+        // 错误已在 safeRequest 中处理
       }
     }
 
@@ -123,43 +132,119 @@ export default {
       loadConcertData()
     })
 
-    // 立即购买前先检查微信是否登录
+    // 直接购买支付流程
     const goToTicketSelection = async () => {
       try {
-        // 检查本地是否有openid（可根据实际存储方式调整）
-        const openid = Taro.getStorageSync('openid')
-        if (!openid) {
+        // 显示支付确认弹窗
+        const confirmResult = await new Promise((resolve) => {
           Taro.showModal({
-            title: '请先登录',
-            content: '请前往“我的”页面完成微信登录',
-            showCancel: false,
-            success: () => {
-              Taro.switchTab({ url: '/pages/mine/index' })
-            }
+            title: '确认购买',
+            content: `确定要购买「${concert.value.name || '演唱会'}」门票吗？\n价格：¥${concert.value.price || 0}`,
+            confirmText: '立即支付',
+            cancelText: '取消',
+            success: (res) => resolve(res.confirm)
           })
-          return
+        })
+
+        if (!confirmResult) return
+
+        // 显示支付加载提示
+        Taro.showLoading({
+          title: '正在发起支付...',
+          mask: true
+        })
+
+        // 获取或模拟用户openid（实际项目中应该从登录状态获取）
+        let openid = Taro.getStorageSync('openid')
+        if (!openid) {
+          // 如果没有openid，可以先尝试获取微信登录信息
+          try {
+            const loginRes = await Taro.login()
+            openid = loginRes.code // 临时使用code，实际应该通过后端换取openid
+            console.log('获取到微信登录code:', openid)
+          } catch (loginErr) {
+            console.error('微信登录失败:', loginErr)
+            Taro.hideLoading()
+            Taro.showToast({ 
+              title: '获取登录信息失败，请重试', 
+              icon: 'none' 
+            })
+            return
+          }
         }
         // 已登录，直接调用微信支付统一下单和支付
-        const payRes = await Taro.request({
+        const { checkNetworkStatus, safeRequest } = await import('../../utils/networkErrorHandler')
+        
+        const isNetworkAvailable = await checkNetworkStatus()
+        if (!isNetworkAvailable) {
+          Taro.hideLoading()
+          return
+        }
+
+        // 调用微信支付统一下单
+        const payRes = await safeRequest({
           url: `${config.apiBaseUrl}/wechatpay/unifiedorder`,
           method: 'POST',
           data: {
-            description: concert.value.name,
-            amount: concert.value.price,
+            description: concert.value.name || '演唱会门票',
+            out_trade_no: `ORDER_${Date.now()}`, // 生成唯一订单号
+            amount: concert.value.price || 100,
             openid,
             trade_type: 'JSAPI'
           }
         })
+        
+        Taro.hideLoading()
+        
         const payData = payRes.data
+        
+        // 验证支付数据完整性
+        if (!payData.timeStamp || !payData.nonceStr || !payData.package || !payData.paySign) {
+          throw new Error('支付数据不完整')
+        }
+
+        // 调用微信支付
         await Taro.requestPayment({
           timeStamp: payData.timeStamp,
           nonceStr: payData.nonceStr,
           package: payData.package,
-          signType: 'MD5',
+          signType: payData.signType || 'MD5',
           paySign: payData.paySign
         })
+
+        // 支付成功
+        Taro.showToast({ 
+          title: '支付成功！', 
+          icon: 'success',
+          duration: 2000
+        })
+
+        // 可选：支付成功后跳转到订单页面或刷新票夹
+        setTimeout(() => {
+          Taro.switchTab({ url: '/pages/orders/index' })
+        }, 2000)
+
       } catch (err) {
-        Taro.showToast({ title: '支付失败', icon: 'none' })
+        Taro.hideLoading()
+        console.error('支付流程失败:', err)
+        
+        // 处理不同类型的支付错误
+        let errorMsg = '支付失败，请重试'
+        if (err.errMsg) {
+          if (err.errMsg.includes('cancel')) {
+            errorMsg = '支付已取消'
+          } else if (err.errMsg.includes('fail')) {
+            errorMsg = '支付失败，请检查网络连接'
+          } else if (err.errMsg.includes('timeout')) {
+            errorMsg = '支付超时，请重试'
+          }
+        }
+        
+        Taro.showToast({ 
+          title: errorMsg, 
+          icon: 'none',
+          duration: 2000
+        })
       }
     }
 
@@ -298,8 +383,8 @@ export default {
         justify-content: center;
         min-width: 80rpx;
         .arrow-icon {
-          width: 32rpx;
-          height: 32rpx;
+          font-size: 32rpx;
+          color: rgba(255, 255, 255, 0.6);
           margin-bottom: 8rpx;
         }
       .distance {

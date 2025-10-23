@@ -1,6 +1,7 @@
 {
   "version": "0.2.0",
   "configurations": [
+    
     // Taro 微信小程序开发环境
     {
       "name": "Taro: 微信小程序开发",
@@ -77,6 +78,28 @@
         "build",
         "--type",
         "weapp"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    
+    // Taro 生产构建 - 预览模式(压缩)
+    {
+      "name": "Taro: 生产预览模式(微信小程序)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/@tarojs/cli/bin/taro",
+      "args": [
+        "build",
+        "--type",
+        "weapp",
+        "--watch"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

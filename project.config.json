@@ -4,7 +4,7 @@
   "description": "VR演唱会",
   "appid": "wx49feb878630b769b",
   "setting": {
-    "urlCheck": true,
+    "urlCheck": false,
     "es6": true,
     "enhance": true,
     "compileHotReLoad": false,
@@ -13,7 +13,7 @@
     "lazyCodeLoading": "requiredComponents",
     "uglifyFileName": true,
     "uploadWithSourceMap": false,
-    "compileWorklet": false,
+    "compileWorklet": true,
     "packNpmManually": false,
     "packNpmRelationList": [],
     "minifyWXSS": true,
@@ -21,9 +21,9 @@
     "localPlugins": false,
     "disableUseStrict": false,
     "useCompilerPlugins": false,
-    "condition": false,
-    "swc": false,
-    "disableSWC": true,
+    "condition": true,
+    "swc": true,
+    "disableSWC": false,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],
@@ -31,11 +31,11 @@
     }
   },
   "compileType": "miniprogram",
+  "libVersion": "3.10.3",
   "simulatorPluginLibVersion": {},
   "packOptions": {
     "ignore": [],
     "include": []
   },
-  "editorSetting": {},
-  "libVersion": "3.10.3"
+  "editorSetting": {}
 }

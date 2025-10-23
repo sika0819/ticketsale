@@ -37,9 +37,15 @@ export default {
     // 获取轮播图和演唱会列表数据
     const fetchData = async () => {
       try {
+        // 首先检查网络状态
+        const { checkNetworkStatus, safeRequest } = await import('../../utils/networkErrorHandler')
+        
+        const isNetworkAvailable = await checkNetworkStatus()
+        if (!isNetworkAvailable) return
+
         // 轮播图接口
         console.log('请求轮播图接口:', 'https://test.3fenban.com/api/banners')
-        const bannerRes = await Taro.request({
+        const bannerRes = await safeRequest({
           url: 'https://test.3fenban.com/api/banners', // 替换为实际接口
           method: 'GET'
         })
@@ -48,7 +54,7 @@ export default {
 
         // 演唱会列表接口
         console.log('请求演唱会列表接口:', 'https://test.3fenban.com/api/concerts')
-        const concertRes = await Taro.request({
+        const concertRes = await safeRequest({
           url: 'https://test.3fenban.com/api/concerts', // 替换为实际接口
           method: 'GET'
         })
@@ -56,7 +62,7 @@ export default {
         concerts.value = concertRes.data || []
       } catch (err) {
         console.error('数据加载失败:', err)
-        Taro.showToast({ title: '数据加载失败', icon: 'none' })
+        // 错误已在 safeRequest 中处理
       }
     }
 

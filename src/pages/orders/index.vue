@@ -30,7 +30,7 @@
     <scroll-view class="tickets-list" scroll-y>
       <!-- 空状态 -->
       <view class="empty-state" v-if="filteredTickets.length === 0">
-  <image src="../../assets/images/empty-tickets.png" class="empty-image" />
+        <view class="empty-image-placeholder">📄</view>
         <text class="empty-text">{{ getEmptyText() }}</text>
         <text class="empty-subtext">{{ getEmptySubtext() }}</text>
         <button class="buy-btn" @tap="goToHome" v-if="activeTab === 'all'">去购票</button>
@@ -183,8 +183,14 @@ export default {
     // 微信支付统一下单
     const payOrder = async (ticket) => {
       try {
+        // 检查网络状态
+        const { checkNetworkStatus, safeRequest } = await import('../../utils/networkErrorHandler')
+        
+        const isNetworkAvailable = await checkNetworkStatus()
+        if (!isNetworkAvailable) return
+
         // 1. 请求后端微信支付统一下单接口
-        const res = await Taro.request({
+        const res = await safeRequest({
           url: `${config.apiBaseUrl}/wechatpay/unifiedorder`,
           method: 'POST',
           data: {
@@ -195,26 +201,46 @@ export default {
             trade_type: 'JSAPI'
           }
         })
+        
         const payData = res.data
+        
+        // 验证支付数据完整性
+        if (!payData.timeStamp || !payData.nonceStr || !payData.package || !payData.paySign) {
+          throw new Error('支付数据不完整')
+        }
+
         // 2. 调用微信支付
         await Taro.requestPayment({
           timeStamp: payData.timeStamp,
           nonceStr: payData.nonceStr,
           package: payData.package,
-          signType: 'MD5',
+          signType: payData.signType || 'MD5',
           paySign: payData.paySign
         })
+        
         Taro.showToast({ title: '支付成功', icon: 'success' })
         checkPayStatus(ticket.id)
       } catch (err) {
-        Taro.showToast({ title: '支付失败', icon: 'none' })
+        console.error('支付失败:', err)
+        // 支付相关的特殊错误处理
+        let errorMsg = '支付失败，请重试'
+        if (err.errMsg) {
+          if (err.errMsg.includes('cancel')) {
+            errorMsg = '支付已取消'
+          } else if (err.errMsg.includes('fail')) {
+            errorMsg = '支付失败，请检查网络连接'
+          }
+        }
+        Taro.showToast({ title: errorMsg, icon: 'none' })
       }
     }
     // 查询支付状态
     const checkPayStatus = async (orderId) => {
       try {
+        const { safeRequest } = await import('../../utils/networkErrorHandler')
+        
         console.log('请求支付状态接口:', `${config.apiBaseUrl}/order/status`, { orderId })
-        const res = await Taro.request({
+        const res = await safeRequest({
           url: `${config.apiBaseUrl}/order/status`,
           method: 'GET',
           data: { orderId }
@@ -222,7 +248,10 @@ export default {
         console.log('支付状态接口返回:', res)
         // 可根据返回结果刷新票据状态
         loadTickets()
-      } catch {}
+      } catch (err) {
+        console.error('查询支付状态失败:', err)
+        // 静默失败，不影响用户体验
+      }
     }
 
     onMounted(() => {
@@ -429,10 +458,16 @@ export default {
       text-align: center;
       padding: 100px 30px;
 
-      .empty-image {
+      .empty-image-placeholder {
         width: 200px;
         height: 200px;
         margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 80px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
       }
 
       .empty-text {

@@ -10,7 +10,10 @@ const config = {
     '750': 1,
     '828': 1.81
   },
-  apiBaseUrl: 'https://test.3fenban.com/api', // 统一 API 地址
+  // API地址根据环境自动切换
+  apiBaseUrl: process.env.NODE_ENV === 'development'
+    ? 'http://127.0.0.1:5000/api'  // 开发环境：本地后端
+    : 'https://test.3fenban.com/api', // 生产环境：线上后端
   sourceRoot: 'src',
   outputRoot: 'dist',
   framework: 'vue3',
@@ -18,6 +21,9 @@ const config = {
   plugins: [],
   alias: {
     '@': 'src'
+  },
+  cache: {
+    enable: true
   },
   copy: {
     patterns: [],

@@ -43,7 +43,15 @@ interface QRCodeData {
 }
 
 // 如果 config 是一个函数，需要调用它以获取配置对象
-const backendUrl = (typeof config === 'function' ? config({}) : config).apiBaseUrl + '/verify'
+const getBackendUrl = () => {
+  try {
+    const configObj = typeof config === 'function' ? config() : config
+    return configObj.apiBaseUrl + '/verify'
+  } catch (e) {
+    console.error('获取配置失败:', e)
+    return 'https://test.3fenban.com/api/verify' // 使用默认值
+  }
+}
 
 export default function useTicketDetail() {
   const ticket: Ref<Ticket> = ref({} as Ticket)
@@ -203,7 +211,7 @@ export default function useTicketDetail() {
       const params = new URLSearchParams(qrData as any).toString()
       
       // 完整的后台URL，包含所有参数
-      const fullUrl = `${backendUrl}?${params}`
+      const fullUrl = `${getBackendUrl()}?${params}`
       
       console.log('二维码URL:', fullUrl)
       console.log('二维码参数:', qrData)
