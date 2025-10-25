@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "myapp",
   "version": "1.0.0",
   "private": true,
   "description": "VR演唱会",
@@ -59,9 +59,8 @@
     "@tarojs/runtime": "4.1.7",
     "@tarojs/shared": "4.1.7",
     "@tarojs/taro": "4.1.7",
-    "lodash.merge": "^4.6.2",
-    "vue": "^3.0.0",
-    "weapp-qrcode": "1.0.0"
+    "weapp-qrcode":"1.0.0",
+    "vue": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.4",
