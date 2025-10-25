@@ -1,5 +1,5 @@
 {
-  "miniprogramRoot": "dist/",
+  "miniprogramRoot": "./dist",
   "projectname": "myApp",
   "description": "VR演唱会",
   "appid": "wx49feb878630b769b",
@@ -10,32 +10,9 @@
     "compileHotReLoad": false,
     "postcss": true,
     "minified": true,
-    "lazyCodeLoading": "requiredComponents",
+    "lazyCodeLoading":"requiredComponents",
     "uglifyFileName": true,
-    "uploadWithSourceMap": false,
-    "compileWorklet": true,
-    "packNpmManually": false,
-    "packNpmRelationList": [],
-    "minifyWXSS": true,
-    "minifyWXML": true,
-    "localPlugins": false,
-    "disableUseStrict": false,
-    "useCompilerPlugins": false,
-    "condition": true,
-    "swc": true,
-    "disableSWC": false,
-    "babelSetting": {
-      "ignore": [],
-      "disablePlugins": [],
-      "outputPath": ""
-    }
+    "uploadWithSourceMap": false
   },
-  "compileType": "miniprogram",
-  "libVersion": "3.10.3",
-  "simulatorPluginLibVersion": {},
-  "packOptions": {
-    "ignore": [],
-    "include": []
-  },
-  "editorSetting": {}
+  "compileType": "miniprogram"
 }
